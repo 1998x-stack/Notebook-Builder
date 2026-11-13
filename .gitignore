@@ -1,0 +1,22 @@
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.egg-info/
+.venv/
+.notebook-history/
+.notebook-trash/
+.notebook-workspaces/
+*.lock
+.env
+*.log
+# Generated tutorial renders, external data and checkpoint artifacts
+tutorials/**/outputs/*.html
+tutorials/**/outputs/*.png
+tutorials/**/outputs/figures/
+tutorials/**/outputs/artifacts/*.pt
+tutorials/**/outputs/*.pt
+tutorials/**/outputs/*.log
+tutorials/nanogpt/outputs/
+*.zip
+.ipynb_checkpoints/
+.notebook-runs/

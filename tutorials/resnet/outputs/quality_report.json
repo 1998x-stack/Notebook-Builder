@@ -1,0 +1,18 @@
+{
+  "path": "/mnt/notebook-builder/tutorials/resnet/outputs/ResNet_Deep_Residual_Learning_Complete_Tutorial.ipynb",
+  "passed": true,
+  "violations": [],
+  "metrics": {
+    "total_cells": 46,
+    "code_cells": 22,
+    "executed_code_cells": 22,
+    "stdout_cells": 21,
+    "figure_cells": 13,
+    "valid_png_images": 13,
+    "invalid_png_cells": [],
+    "error_outputs": []
+  },
+  "version": 9,
+  "spec_sha256": "0196a95badea1478e90df895ae1f3128d6af5e03f908dba057bc5f07178e33a7",
+  "scope": "saved-output structural checks; not scientific validation or sandboxing"
+}

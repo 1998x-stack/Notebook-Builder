@@ -1,0 +1,10 @@
+{
+  "title": "Nebula Notebook 迁移示例：可复现数据分析",
+  "cells": [
+    {"cell_type":"markdown", "source":"## 研究目标\n使用本地 Jupyter Kernel 生成数据、计算统计量，并绘制可复现图表。"},
+    {"cell_type":"code", "source":"import numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nrng = np.random.default_rng(2026)\ndf = pd.DataFrame({'x': np.arange(40), 'y': np.arange(40)*0.7 + rng.normal(0, 4, 40)})\nprint(df.head().to_string(index=False))"},
+    {"cell_type":"code", "source":"summary = df.describe()\nprint('rows:', len(df))\nprint('mean y:', round(df.y.mean(), 3))\nassert len(df) == 40\nsummary"},
+    {"cell_type":"code", "source":"fig, ax = plt.subplots(figsize=(7, 4))\nax.scatter(df.x, df.y, s=22)\nax.set(title='Reproducible local notebook', xlabel='X', ylabel='Y')\nax.grid(alpha=0.2)\nplt.show()"},
+    {"cell_type":"markdown", "source":"## 复现信息\n随机种子 2026；使用本地 Python 环境，不需要云端 API、Docker 或 GPU。"}
+  ]
+}

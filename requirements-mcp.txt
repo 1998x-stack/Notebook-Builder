@@ -1,0 +1,3 @@
+-r requirements.txt
+# Optional: native JSON-RPC MCP stdio needs no SDK. Official adapter uses:
+mcp>=1.30,<2

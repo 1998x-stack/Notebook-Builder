@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+exec python "$ROOT/nbuild.py" "$@"

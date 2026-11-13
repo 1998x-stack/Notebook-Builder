@@ -1,0 +1,37 @@
+name: Notebook Builder CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: CPU torch for model unit tests
+        run: python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Install builder + tutorial scientific deps
+        run: python -m pip install -e '.[test]' numpy matplotlib pandas ipython
+      - name: Compile source
+        run: python -m compileall -q notebook_builder.py notebook_ops.py notebook_quality.py mcp_tools.py mcp_protocol.py mcp_server.py runtime_manager.py run_jobs.py run_worker.py workspace_ops.py research_ledger.py tutorials/resnet tutorials/nanogpt
+      # Isolate notebook kernel/job test families across Python subprocesses.
+      # A single-process aggregate run has shown order-sensitive stalls in some hosted environments.
+      - name: Core, consistency and Colab contracts
+        run: python -m pytest -q tests/test_builder.py tests/test_colab_resnet.py tests/test_hardening.py tests/test_ops.py tests/test_optimizations.py
+      - name: MCP, jobs and runtime
+        run: python -m pytest -q tests/test_mcp.py tests/test_jobs.py tests/test_runtime.py
+      - name: Research ledger
+        run: python -m pytest -q tests/test_research.py
+      - name: Tutorials and workspace
+        run: python -m pytest -q tests/test_nanogpt_tutorials.py tests/test_resnet_tutorial.py tests/test_workspace.py
+      - name: Doctor
+        run: python nbuild.py doctor

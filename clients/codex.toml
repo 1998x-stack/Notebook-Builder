@@ -1,0 +1,4 @@
+[mcp_servers.notebook-builder]
+command = "/mnt/notebook-builder/nbuild-mcp"
+args = []
+env = { NB_ROOT = "/mnt/data/notebooks", NB_MCP_READONLY = "1", NB_MCP_ALLOW_EXEC = "0" }

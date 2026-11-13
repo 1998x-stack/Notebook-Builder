@@ -1,0 +1,16 @@
+{
+  "paper": "arXiv:1512.03385",
+  "model": "CIFARResNet n=1 width=8 synthetic demo",
+  "seed": 2026,
+  "train_examples": 144,
+  "validation_examples": 60,
+  "steps": 24,
+  "validation_accuracy": 0.8500000238418579,
+  "validation_loss": 0.2410859763622284,
+  "checkpoint_sha256": "981f5fdace1ab23fc04da8b542e38dcf875143503e2ce608368f45ec55a7ead1",
+  "torch_version": "2.10.0+cpu",
+  "verified_reload_exact": true,
+  "device": "cpu",
+  "amp": false,
+  "colab": false
+}
