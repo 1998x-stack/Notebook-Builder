@@ -141,7 +141,7 @@ def new_cell(cell_type: str, source: str):
 
 
 def create(path: str | Path, *, title: str | None = None, cells: list[dict] | None = None,
-           overwrite: bool = False, spec_sha256: str | None = None) -> dict:
+           overwrite: bool = False, spec_sha256: str | None = None, reproduction: dict | None = None) -> dict:
     p = _path(path)
     with _lock(p):
         if p.exists() and not overwrite:
@@ -164,6 +164,18 @@ def create(path: str | Path, *, title: str | None = None, cells: list[dict] | No
         if title:
             nb.metadata[META_KEY]["title"] = title
         nb.metadata[META_KEY]["created_at"] = timestamp()
+        if reproduction is not None:
+            if not isinstance(reproduction,dict) or reproduction.get('stage') not in (
+                'protocol_ready','implementation_only','real_data_partial'):
+                raise ValueError('Notebook generation cannot assert completed scientific reproduction')
+            nb.metadata[META_KEY]['reproduction']={
+                'stage':reproduction['stage'],
+                'paper':str(reproduction.get('paper',''))[:128],
+                'scope':str(reproduction.get('scope',''))[:128],
+                'dataset':str(reproduction.get('dataset',''))[:128],
+                'fidelity':str(reproduction.get('fidelity',''))[:128],
+                'evidence_level':'no executed evidence at creation',
+            }
         if spec_sha256 is not None:
             if not re.fullmatch(r"[a-f0-9]{64}", spec_sha256):
                 raise ValueError('spec_sha256 must be a lowercase SHA-256 hex digest')
@@ -179,7 +191,8 @@ def from_spec(path: str | Path, spec: str | Path, *, overwrite: bool = False):
     fingerprint = hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=False,
                                            separators=(',', ':')).encode('utf-8')).hexdigest()
     return create(path, title=data.get("title"), cells=data.get("cells", []),
-                  overwrite=overwrite, spec_sha256=fingerprint)
+                  overwrite=overwrite, spec_sha256=fingerprint,
+                  reproduction=data.get('reproduction'))
 
 
 def _modify(path: str | Path, action: str, callback: Callable[[Any], T],

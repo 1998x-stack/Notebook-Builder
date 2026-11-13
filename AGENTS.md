@@ -11,7 +11,7 @@ This repository is a **local, trusted-host Notebook builder**, not the upstream 
 - `runtime_manager.py`: session-lifetime stateful Jupyter Kernel (max 4).
 - `research_ledger.py`: 本地实验/Trial 记录，SHA-256 评估源码和数据环境声明、真实 Run 结果与工件
 - `run_jobs.py` / `run_worker.py`: SQLite and asynchronous local process execution with interrupted recovery.
-- `mcp_tools.py`: typed 57-tool registry and **centralized** permission guards; new tools must be added here.
+- `mcp_tools.py`: typed 58-tool registry and **centralized** permission guards; new tools must be added here.
 - `mcp_protocol.py`: small standard-input/output JSON-RPC MCP subset; must keep stdout protocol-pure.
 - `mcp_server.py`: native/optional official-SDK adapter (both must call guarded `invoke`).
 - `nbuild.py`: CLI; should mirror relevant capabilities while keeping local commands explicit.
@@ -60,3 +60,15 @@ python3 /mnt/notebook-builder/nbuild.py doctor
 ```
 
 If git networking is blocked, use a verified source ZIP then execute `scripts/install-to-mnt.sh --quick` from the unpacked directory.
+
+## Scientific reproduction contract (mandatory for future sessions)
+
+Before generating a paper-reproduction Notebook, read [`docs/PAPER_REPRODUCTION.md`](docs/PAPER_REPRODUCTION.md).
+
+- **Do not equate `nbuild quality` success with scientific replication.** It validates Cell outputs only.
+- Use `nbuild paper-resnet --dataset cifar10|imagenet|detection` for the real-data Colab protocol versions; use `nbuild reproduce-quality` against actual run manifests after training.
+- Every Notebook must declare a reproduction intent; generated artifacts start as `protocol_ready`, never as passed/completed.
+- Never return a positive result for a synthetic dataset, missing run manifest, incomplete 64k CIFAR or 600k ImageNet step budget, test set subset, failed dataset authentication, or inadequate replication coverage.
+- Distinguish CIFAR-10 paper workstream from the entire ResNet paper, which also includes ImageNet 2012, PASCAL VOC, COCO and 2015 competition/ensemble results. The full-paper checker requires external audit and cannot certify the whole paper automatically.
+- Full-dataset Colab/GPU jobs can require many sessions and hours/days of compute. Do not claim to have executed them in the local CPU container; present all such outputs as **not yet executed** unless you have genuine training run evidence.
+- No synthetic accuracy charts, no fabricated comparison plots, no preset numbers masquerading as observed results. Official paper numbers may appear as clearly attributed reference targets ONLY.

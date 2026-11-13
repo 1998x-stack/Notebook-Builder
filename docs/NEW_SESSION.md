@@ -47,3 +47,8 @@ python3 -m pytest -q tests
 - `NB_ROOT` limits paths exposed to MCP; `NB_READONLY` and `NB_ALLOW_EXEC` are distinct gates. Start read-only.
 - `RUN_REAL_CIFAR10`, `RUN_IMAGENET_TRAIN`, `ALLOW_WEIGHT_DOWNLOAD` default to off; no model/data download is implied.
 - CLI can write `/mnt/data`, but the new session's filesystem and linked application permissions are not guaranteed.
+
+
+## Scientific reproduction (new in v2.3)
+
+If the task is a paper replication instead of an educational demo, read `docs/PAPER_REPRODUCTION.md` first. The new `paper-resnet` CLI builds real-data experiment protocols; `reproduce-quality` checks declared evidence. The protocols are intentionally UNEXECUTED until official datasets and compute are provided. Never claim that downloading or constructing a notebook reproduced a paper.

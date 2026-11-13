@@ -203,3 +203,21 @@ python3 nbuild.py tutorial resnet --build --execute --html --force
 ```
 
 **Run provenance:** GPU acceleration is used only if `torch.cuda.is_available()`; current CI and local CPU runs do not assert GPU validation. The produced `.ipynb` embeds the full model code. Real ImageNet/CIFAR10 training requires explicit opt-in and data.
+
+## Paper reproduction vs educational Notebook (v2.3)
+
+A tutorial with executed print/figures is **not** a paper reproduction. The ResNet demo under `tutorials/resnet/outputs/` trains on synthetic images. This is explicitly categorized as **educational only**.
+
+For ResNet arXiv:1512.03385 real-data Colab protocols:
+
+```bash
+nbuild paper-resnet --dataset cifar10 --output /mnt/data/notebooks/resnet-cifar-full.ipynb
+nbuild paper-resnet --dataset imagenet --output /mnt/data/notebooks/resnet-imagenet-protocol.ipynb
+nbuild paper-resnet --dataset detection --output /mnt/data/notebooks/resnet-voc-coco-modern.ipynb
+
+# Explicit independent evidence quality gates; always fail for missing/partial data:
+nbuild reproduce-quality /path/to/paper_evidence.json --scope cifar10_paper
+nbuild reproduce-quality /path/to/paper_evidence.json --scope full_paper
+```
+
+Builder now differentiates document execution quality from experimental evidence. `paper_reproduction.py` supports experiment-scope coverage, 5 separate ResNet110 seeds, official dataset checks, full evaluation counts, optimizer steps and optional real checkpoint SHA256 audit. The `full_paper` scope deliberately requires independent scientific review and will never silently mark an incomplete research program as replicated. See [`docs/PAPER_REPRODUCTION.md`](docs/PAPER_REPRODUCTION.md).

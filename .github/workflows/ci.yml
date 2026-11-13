@@ -22,11 +22,13 @@ jobs:
       - name: Install builder + tutorial scientific deps
         run: python -m pip install -e '.[test]' numpy matplotlib pandas ipython
       - name: Compile source
-        run: python -m compileall -q notebook_builder.py notebook_ops.py notebook_quality.py mcp_tools.py mcp_protocol.py mcp_server.py runtime_manager.py run_jobs.py run_worker.py workspace_ops.py research_ledger.py tutorials/resnet tutorials/nanogpt
+        run: python -m compileall -q notebook_builder.py notebook_ops.py notebook_quality.py paper_reproduction.py mcp_tools.py mcp_protocol.py mcp_server.py runtime_manager.py run_jobs.py run_worker.py workspace_ops.py research_ledger.py tutorials/resnet tutorials/nanogpt
       # Isolate notebook kernel/job test families across Python subprocesses.
       # A single-process aggregate run has shown order-sensitive stalls in some hosted environments.
       - name: Core, consistency and Colab contracts
-        run: python -m pytest -q tests/test_builder.py tests/test_colab_resnet.py tests/test_hardening.py tests/test_ops.py tests/test_optimizations.py
+        run: python -m pytest -q tests/test_builder.py tests/test_colab_resnet.py tests/test_hardening.py tests/test_ops.py
+      - name: Optimizations and scientific paper QA
+        run: python -m pytest -q tests/test_optimizations.py tests/test_paper_reproduction.py
       - name: MCP, jobs and runtime
         run: python -m pytest -q tests/test_mcp.py tests/test_jobs.py tests/test_runtime.py
       - name: Research ledger

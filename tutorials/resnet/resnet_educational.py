@@ -20,7 +20,7 @@ def conv1x1(inp:int, out:int, stride:int=1):
 
 class BasicBlock(nn.Module):
     expansion = 1
-    def __init__(self, inplanes:int, planes:int, stride:int=1, downsample=None):
+    def __init__(self, inplanes:int, planes:int, stride:int=1, downsample=None, use_shortcut:bool=True):
         super().__init__()
         self.conv1=conv3x3(inplanes,planes,stride)
         self.bn1=nn.BatchNorm2d(planes)
@@ -28,18 +28,19 @@ class BasicBlock(nn.Module):
         self.conv2=conv3x3(planes,planes)
         self.bn2=nn.BatchNorm2d(planes)
         self.downsample=downsample
+        self.use_shortcut=use_shortcut
     def forward(self,x):
         identity=x
         out=self.relu(self.bn1(self.conv1(x)))
         out=self.bn2(self.conv2(out))
         if self.downsample is not None:identity=self.downsample(x)
-        out=out+identity
+        out=out+identity if self.use_shortcut else out
         return self.relu(out)
 
 
 class Bottleneck(nn.Module):
     expansion = 4
-    def __init__(self,inplanes:int,planes:int,stride:int=1,downsample=None):
+    def __init__(self,inplanes:int,planes:int,stride:int=1,downsample=None,use_shortcut:bool=True):
         super().__init__()
         # Original ResNet-v1 stride is on the first 1x1 (not torchvision's v1.5 3x3).
         self.conv1=conv1x1(inplanes,planes,stride)
@@ -50,19 +51,21 @@ class Bottleneck(nn.Module):
         self.bn3=nn.BatchNorm2d(planes*self.expansion)
         self.relu=nn.ReLU(inplace=True)
         self.downsample=downsample
+        self.use_shortcut=use_shortcut
     def forward(self,x):
         identity=x
         out=self.relu(self.bn1(self.conv1(x)))
         out=self.relu(self.bn2(self.conv2(out)))
         out=self.bn3(self.conv3(out))
         if self.downsample is not None:identity=self.downsample(x)
-        return self.relu(out+identity)
+        return self.relu(out+identity if self.use_shortcut else out)
 
 
 class ImageNetResNet(nn.Module):
-    def __init__(self,block,layers, num_classes:int=1000, zero_init_residual:bool=False):
+    def __init__(self,block,layers, num_classes:int=1000, zero_init_residual:bool=False, plain:bool=False):
         super().__init__()
         self.inplanes=64
+        self.plain=plain
         self.conv1=nn.Conv2d(3,64,7,stride=2,padding=3,bias=False)
         self.bn1=nn.BatchNorm2d(64)
         self.relu=nn.ReLU(inplace=True)
@@ -85,11 +88,11 @@ class ImageNetResNet(nn.Module):
     def _make_layer(self,block,planes,blocks,stride=1):
         outplanes=planes*block.expansion
         downsample=None
-        if stride!=1 or self.inplanes!=outplanes:
+        if not self.plain and (stride!=1 or self.inplanes!=outplanes):
             downsample=nn.Sequential(conv1x1(self.inplanes,outplanes,stride),nn.BatchNorm2d(outplanes))
-        seq=[block(self.inplanes,planes,stride,downsample)]
+        seq=[block(self.inplanes,planes,stride,downsample,use_shortcut=not self.plain)]
         self.inplanes=outplanes
-        seq.extend(block(self.inplanes,planes) for _ in range(1,blocks))
+        seq.extend(block(self.inplanes,planes,use_shortcut=not self.plain) for _ in range(1,blocks))
         return nn.Sequential(*seq)
     def forward_features(self,x):
         x=self.maxpool(self.relu(self.bn1(self.conv1(x))))
@@ -134,14 +137,16 @@ class CIFARBasicBlock(nn.Module):
         self.relu=nn.ReLU(inplace=True)
         self.conv2=conv3x3(planes,planes)
         self.bn2=nn.BatchNorm2d(planes)
-        if stride==1 and inplanes==planes:self.shortcut=nn.Identity()
+        if shortcut=='none':self.shortcut=None
+        elif stride==1 and inplanes==planes:self.shortcut=nn.Identity()
         elif shortcut=='A':self.shortcut=OptionAShortcut(inplanes,planes,stride)
         elif shortcut=='B':self.shortcut=nn.Sequential(conv1x1(inplanes,planes,stride),nn.BatchNorm2d(planes))
-        else:raise ValueError('shortcut must be A or B')
+        elif shortcut=='none':self.shortcut=None  # paper plain-network ablation
+        else:raise ValueError('shortcut must be A, B or none')
     def forward(self,x):
         y=self.relu(self.bn1(self.conv1(x)))
         y=self.bn2(self.conv2(y))
-        return self.relu(y+self.shortcut(x))
+        return self.relu(y if self.shortcut is None else y+self.shortcut(x))
 
 
 class CIFARResNet(nn.Module):

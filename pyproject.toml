@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nebula-notebook-builder-local"
-version = "2.2.0"
+version = "2.3.0"
 description = "Local agent-native Jupyter Notebook authoring and MCP stdio adapter"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -27,7 +27,7 @@ nbuild = "nbuild:main"
 nbuild-mcp = "mcp_server:main"
 
 [tool.setuptools]
-py-modules = ["notebook_builder", "notebook_ops", "workspace_ops", "runtime_manager", "mcp_tools", "mcp_protocol", "mcp_server", "nbuild", "run_jobs", "run_worker", "research_ledger", "notebook_quality"]
+py-modules = ["notebook_builder", "notebook_ops", "workspace_ops", "runtime_manager", "mcp_tools", "mcp_protocol", "mcp_server", "nbuild", "run_jobs", "run_worker", "research_ledger", "notebook_quality", "paper_reproduction"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

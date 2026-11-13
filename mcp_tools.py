@@ -121,6 +121,20 @@ def notebook_quality(path: str, require_executed: bool = True,
                    min_print_cells=min_print_cells, min_figure_cells=min_figure_cells)
 
 
+@tool(permission='read')
+def paper_reproduction_quality(path: str, scope: str = 'cifar10_paper') -> dict:
+    """Check declared real-dataset evidence and full paper-coverage gates; synthetic/partial runs fail."""
+    from paper_reproduction import inspect
+    from workspace_ops import checked_notebook
+    # Guarded workspace API: evidence must be within NB_ROOT, never arbitrary host paths.
+    raw = Path(path)
+    if raw.is_absolute() or '..' in raw.parts or any(part.startswith('.') for part in raw.parts) or not path.endswith('.json'):
+        raise ValueError('Evidence path must be a relative JSON path under NB_ROOT')
+    full = (ROOT / raw).resolve()
+    if not full.is_relative_to(ROOT): raise ValueError('Evidence path escapes NB_ROOT')
+    if full.stat().st_size > 2_000_000: raise ValueError('Evidence manifest exceeds 2MB')
+    return inspect(full, scope=scope)
+
 @tool(permission='write')
 def notebook_create(path: str, title: str = '', cells: list[dict] | None = None) -> dict:
     """Create a standard .ipynb from a title and optional cell specifications."""

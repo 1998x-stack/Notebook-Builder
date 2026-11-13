@@ -1,0 +1,6 @@
+# Notebook runtime only; install torch/torchvision from matching Colab CUDA wheels.
+# Colab normally preinstalls PyTorch and torchvision. Do not automatically override them.
+numpy>=1.26
+matplotlib>=3.8
+Pillow>=10
+# Detection (optional): pip install pycocotools

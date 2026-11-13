@@ -79,3 +79,7 @@ nbuild tutorial nanogpt --build --execute --html --force
 ```
 
 参考 `tutorials/nanogpt/README.md`、`tutorials/nanogpt/index.html` 及可修改的 `specs/*.json`。此教学代码保留 GPT 核心概念，不包含生产模型训练、任意外部代码下载执行或 GPU 性能保证。
+
+## Reproducibility policy
+
+When a user asks for "paper reproduction" or "复现论文" instead of an explanatory tutorial, refer to [`docs/PAPER_REPRODUCTION.md`](docs/PAPER_REPRODUCTION.md), and use `nbuild paper-resnet` / `nbuild reproduce-quality` for real-dataset protocol programs. Do not replace unavailable real datasets with synthetic data or treat `nbuild quality` success as scientific evidence. Generated scientific Notebooks are `protocol_ready` until genuine real-data experiments finish and are externally verified.
