@@ -25,7 +25,12 @@ def rpc(tmp_path, queries, *, readonly='1', execute='0'):
                             input=''.join(json.dumps(x)+'\n' for x in queries),
                             text=True,capture_output=True,env=env,timeout=80)
     assert result.returncode==0, result.stderr
-    assert not result.stderr
+    # Modern ipykernel may legitimately warn on stderr about local TCP/ZMQ
+    # transport; stderr is diagnostic, not the MCP JSON-RPC stdout channel.
+    # Accept only this specific warning; fail on unexpected stderr output.
+    err_lines=[line for line in result.stderr.splitlines() if line.strip()]
+    assert all(line.startswith('[IPKernelApp] WARNING | Kernel is running over TCP without encryption.')
+               for line in err_lines), result.stderr
     return [json.loads(s) for s in result.stdout.strip().splitlines()]
 
 
