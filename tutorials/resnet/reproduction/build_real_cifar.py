@@ -200,6 +200,10 @@ def train_one_full_experiment(kind,depth,seed,remaining):
     donefile=ARTIFACTS/(label+'.json')
     if donefile.exists():
         saved=json.loads(donefile.read_text())
+        if saved.get('dataset',{}).get('fingerprint_sha256') != DATASET_FINGERPRINT:
+            raise ValueError('Dataset fingerprint mismatch with completed real-data run')
+        if not ckpt.is_file() or sha256_file(ckpt) != saved.get('checkpoint_sha256'):
+            raise ValueError('Completed checkpoint missing or checksum changed')
         print('EXPERIMENT COMPLETE previously:',label,'test accuracy',saved['accuracy_top1'])
         return 0, saved
     random.seed(seed);np.random.seed(seed);torch.manual_seed(seed)
@@ -214,6 +218,8 @@ def train_one_full_experiment(kind,depth,seed,remaining):
         state=torch.load(ckpt,map_location='cpu',weights_only=False) # our OWN trusted checkpoint only
         if (state['kind'],state['depth'],state['seed'])!=(kind,depth,seed):raise ValueError('Checkpoint config changed')
         if state['device_type']!=DEVICE.type:raise ValueError('Device type changed; use same accelerator to preserve RNG')
+        if state.get('dataset_fingerprint') != DATASET_FINGERPRINT:
+            raise ValueError('Attempt to resume with a different dataset fingerprint')
         model.load_state_dict(state['model']);optimizer.load_state_dict(state['optimizer'])
         scaler.load_state_dict(state['scaler']);sampler.set_state(state['sampler_state'])
         torch.set_rng_state(state['torch_cpu_rng'])
@@ -248,7 +254,7 @@ def train_one_full_experiment(kind,depth,seed,remaining):
                    'scaler':scaler.state_dict(),'sampler_state':sampler.get_state(),
                    'torch_cpu_rng':torch.get_rng_state(),
                    'torch_cuda_rng':torch.cuda.get_rng_state_all() if DEVICE.type=='cuda' else None,
-                   'device_type':DEVICE.type,'history':history,
+                   'device_type':DEVICE.type,'history':history,'dataset_fingerprint':DATASET_FINGERPRINT,
                    'warmup_finished':warmup_finished,'warmup_end':warmup_end}
             save_atomic(state,ckpt)
     del optimizer,scaler

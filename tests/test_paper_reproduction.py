@@ -103,3 +103,41 @@ def test_cannot_assert_reproduction_on_notebook_creation(tmp_path):
     with pytest.raises(ValueError):
         core.create(tmp_path/'fake.ipynb',title='fake',
                     reproduction={'stage':'protocol_complete'})
+
+
+def test_cifar_checkpoint_resume_uses_real_optimizer_steps_not_claimed_result(tmp_path):
+    """A tiny fixture is ONLY a software unit test; never publish its scores as CIFAR research."""
+    import numpy as np
+    path = Path(__file__).resolve().parents[1] / 'tutorials/resnet/reproduction/ResNet_2015_CIFAR10_FULL_PAPER_Colab.ipynb'
+    nb = nbformat.read(path, as_version=4)
+    ns={'__name__':'paper_unit_test'}
+    for i in (2,4,10,12):
+        exec(compile(nb.cells[i].source, f'unit_cell_{i}', 'exec'), ns)
+    torch.set_num_threads(2)
+    ns['ARTIFACTS']=tmp_path
+    ns['GLOBAL_BATCH']=4
+    ns['X_TRAIN']=torch.randint(0,255,(12,3,32,32),dtype=torch.uint8)
+    ns['Y_TRAIN']=torch.arange(12)%10
+    ns['MEAN']=torch.zeros(3,32,32)
+    ns['train_ds']=range(12)
+    ns['DATASET_FINGERPRINT']='c'*64
+    assert ns['train_one_full_experiment']('resnet',20,1,2)==(2,None)
+    assert ns['train_one_full_experiment']('resnet',20,1,2)==(2,None)
+    ckpt=torch.load(tmp_path/'resnet_20_seed1.pt',map_location='cpu',weights_only=False)
+    assert ckpt['step']==4
+    assert ckpt['dataset_fingerprint']=='c'*64
+    assert not (tmp_path/'resnet_20_seed1.json').exists(), 'A partial mocked run must never claim actual CIFAR metrics'
+    ns['DATASET_FINGERPRINT']='d'*64
+    with pytest.raises(ValueError,match='dataset fingerprint'):
+        ns['train_one_full_experiment']('resnet',20,1,1)
+
+
+def test_mcp_evidence_tool_guards_root_and_registered_readonly(tmp_path,monkeypatch):
+    import mcp_tools
+    assert mcp_tools.REGISTRY['paper_reproduction_quality'].permission=='read'
+    with pytest.raises(ValueError):
+        mcp_tools.paper_reproduction_quality('../secrets.json')
+    with pytest.raises(ValueError):
+        mcp_tools.paper_reproduction_quality('/tmp/private.json')
+    with pytest.raises(ValueError):
+        mcp_tools.paper_reproduction_quality('.hidden/a.json')
